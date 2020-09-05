@@ -43,6 +43,9 @@ PODS:
     - Protobuf (~> 3.11.4)
   - flutter_mcumgr (0.0.1):
     - Flutter
+    - McuManager (~> 0.10.0)
+  - McuManager (0.10.0):
+    - SwiftCBOR (= 0.4.3)
   - path_provider (0.0.1):
     - Flutter
   - Protobuf (3.11.4)
@@ -52,12 +55,14 @@ PODS:
   - SDWebImageFLPlugin (0.4.0):
     - FLAnimatedImage (>= 1.0.11)
     - SDWebImage/Core (~> 5.6)
+  - SwiftCBOR (0.4.3)
 
 DEPENDENCIES:
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
   - flutter_blue (from `.symlinks/plugins/flutter_blue/ios`)
   - flutter_mcumgr (from `.symlinks/plugins/flutter_mcumgr/ios`)
+  - McuManager (from `https://github.com/JuulLabs-OSS/mcumgr-ios`, branch `master`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
 
 SPEC REPOS:
@@ -68,6 +73,7 @@ SPEC REPOS:
     - Protobuf
     - SDWebImage
     - SDWebImageFLPlugin
+    - SwiftCBOR
 
 EXTERNAL SOURCES:
   file_picker:
@@ -78,8 +84,16 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_blue/ios"
   flutter_mcumgr:
     :path: ".symlinks/plugins/flutter_mcumgr/ios"
+  McuManager:
+    :branch: master
+    :git: https://github.com/JuulLabs-OSS/mcumgr-ios
   path_provider:
     :path: ".symlinks/plugins/path_provider/ios"
+
+CHECKOUT OPTIONS:
+  McuManager:
+    :commit: 0a101d6fba0aa6f7d797473d42bb8ffea497339d
+    :git: https://github.com/JuulLabs-OSS/mcumgr-ios
 
 SPEC CHECKSUMS:
   DKImagePickerController: 4a3e7948a848c4348e600b3fe5ce41478835fa10
@@ -88,12 +102,14 @@ SPEC CHECKSUMS:
   FLAnimatedImage: 4a0b56255d9b05f18b6dd7ee06871be5d3b89e31
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   flutter_blue: eeb381dc4727a0954dede73515f683865494b370
-  flutter_mcumgr: d2bb950d9b2cfb825e022811f93c31a4ed15a0c2
+  flutter_mcumgr: 2849f818bb1ef591997961bc4bfa61c9e9e3756e
+  McuManager: a734d3ef5cbf2fb6021388c79f8c7895b3281e38
   path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
   Protobuf: 176220c526ad8bd09ab1fb40a978eac3fef665f7
   SDWebImage: 62ae4a18473520c67b79e9724c31a63599cc9423
   SDWebImageFLPlugin: 6c2295fb1242d44467c6c87dc5db6b0a13228fd8
+  SwiftCBOR: c7d740966575e0fd5d971466de2b6776db3f10c3
 
-PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
+PODFILE CHECKSUM: 6319b462dbdf3c5ff9a0d062d667cec1d744cb94
 
 COCOAPODS: 1.9.3

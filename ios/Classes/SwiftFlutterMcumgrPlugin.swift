@@ -1,5 +1,6 @@
 import Flutter
 import UIKit
+import McuManager
 
 public class SwiftFlutterMcumgrPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
