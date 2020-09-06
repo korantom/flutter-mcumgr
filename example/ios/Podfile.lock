@@ -102,7 +102,7 @@ SPEC CHECKSUMS:
   FLAnimatedImage: 4a0b56255d9b05f18b6dd7ee06871be5d3b89e31
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   flutter_blue: eeb381dc4727a0954dede73515f683865494b370
-  flutter_mcumgr: 2849f818bb1ef591997961bc4bfa61c9e9e3756e
+  flutter_mcumgr: 3f445c2fbc20b1ebc858c2f1cc9dbcc04613b2cc
   McuManager: a734d3ef5cbf2fb6021388c79f8c7895b3281e38
   path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
   Protobuf: 176220c526ad8bd09ab1fb40a978eac3fef665f7

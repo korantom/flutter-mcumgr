@@ -207,20 +207,21 @@ class FlutterMcuManager {
   /* ------------------------------------------------------------------------ */
 
   ///
-  static Future<bool> _sendCommand(String endPoint, String commandValue) async {
-    final bool success =
-        await _methodChannel.invokeMethod('sendCommand', <String, dynamic>{
-      'endPoint': endPoint,
-      'commandValue': commandValue,
+  static Future<String> sendTextCommand(String text) async {
+    final String result =
+        await _methodChannel.invokeMethod('sendTextCommand', <String, dynamic>{
+      'text': text,
     });
-    return success;
+    return result;
   }
 
   /// Read a file from device file system
-  static Future<void> readFile(String filePath) async {
-    await _methodChannel.invokeMethod('readFile', <String, dynamic>{
+  static Future<String> readFile(String filePath) async {
+    final fileContent =
+        await _methodChannel.invokeMethod('readFile', <String, dynamic>{
       'filePath': filePath,
     });
+    return fileContent;
   }
 
   /// Saves a string as txt file to mobile phone file system

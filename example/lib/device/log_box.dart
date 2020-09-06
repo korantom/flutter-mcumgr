@@ -18,6 +18,8 @@ class _LogBoxState extends State<LogBox> {
   String filePath = '/storage/last_boot';
   final TextEditingController filePathController =
       TextEditingController(text: 'last_boot');
+  String fileContent = "File Content";
+  String commandResult = "Command Result";
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +28,19 @@ class _LogBoxState extends State<LogBox> {
         mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text("Send Command"),
+          IconButton(
+            icon: Icon(Icons.file_upload),
+            onPressed: () async {
+              String res =
+                  await FlutterMcuManager.sendTextCommand("SAVE_LAST_BOOT");
+              setState(() {
+                this.commandResult = res;
+              });
+            },
+          ),
+          Text(commandResult),
+          Divider(),
           Text('Download'),
           Divider(),
           _fileTextField(),
@@ -33,6 +48,7 @@ class _LogBoxState extends State<LogBox> {
           Text(this.filePath),
           _progressInfo(),
           _statusInfo(),
+          Text(fileContent),
         ],
       ),
     );
@@ -41,7 +57,10 @@ class _LogBoxState extends State<LogBox> {
 /* ------------------------------------------------------------------------ */
 
   void _download(String filePath) async {
-    await FlutterMcuManager.readFile(filePath);
+    String fileContent = await FlutterMcuManager.readFile(filePath);
+    setState(() {
+      this.fileContent = fileContent;
+    });
   }
 
   void _setMountPoint(String mountPoint) {}
@@ -84,7 +103,7 @@ class _LogBoxState extends State<LogBox> {
   Widget _statusInfo() {
     return StreamBuilder<String>(
       stream: FlutterMcuManager.fileDownloadStatusStream,
-      initialData: "status:",
+      initialData: "_",
       builder: (c, snapshot) {
         return Text("status: ${snapshot.data}");
       },
