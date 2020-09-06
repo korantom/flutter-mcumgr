@@ -34,7 +34,7 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.korantom.flutter_mcumgr_example"
-        minSdkVersion 16
+        minSdkVersion 19
         targetSdkVersion 28
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -51,4 +51,8 @@ android {
 
 flutter {
     source '../..'
+}
+
+dependencies {
+    implementation 'io.runtime.mcumgr:mcumgr-ble:0.11.0'
 }

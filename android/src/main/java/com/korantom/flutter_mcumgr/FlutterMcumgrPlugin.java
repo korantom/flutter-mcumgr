@@ -11,10 +11,6 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 /** FlutterMcumgrPlugin */
 public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
-  /// The MethodChannel that will the communication between Flutter and native Android
-  ///
-  /// This local reference serves to register the plugin with the Flutter Engine and unregister it
-  /// when the Flutter Engine is detached from the Activity
   private MethodChannel channel;
 
   @Override
@@ -24,14 +20,7 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
   }
 
   // This static function is optional and equivalent to onAttachedToEngine. It supports the old
-  // pre-Flutter-1.12 Android projects. You are encouraged to continue supporting
-  // plugin registration via this function while apps migrate to use the new Android APIs
-  // post-flutter-1.12 via https://flutter.dev/go/android-project-migration.
-  //
-  // It is encouraged to share logic between onAttachedToEngine and registerWith to keep
-  // them functionally equivalent. Only one of onAttachedToEngine or registerWith will be called
-  // depending on the user's project. onAttachedToEngine or registerWith must both be defined
-  // in the same class.
+  // pre-Flutter-1.12 Android projects
   public static void registerWith(Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), "flutter_mcumgr");
     channel.setMethodCallHandler(new FlutterMcumgrPlugin());
