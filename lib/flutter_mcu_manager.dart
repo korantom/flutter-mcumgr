@@ -1,15 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'firmware_image.dart';
 
 // TODO: manage ble connections as well?
 // TODO: if mac address is constant reconect device after reset
 // TODO: handle exceptions
+// TODO: return types
 
 /// Manages reading and writing files to device (identified by mac addr)
 ///
@@ -224,12 +227,12 @@ class FlutterMcuManager {
     return fileContent;
   }
 
-  /// Saves a string as txt file to mobile phone file system
-  static Future<void> saveFile(String filePath, String fileContent) async {
-    await _methodChannel.invokeMethod('saveFile', <String, dynamic>{
-      'filePath': filePath,
-      'fileContent': fileContent,
-    });
+  /// Save a string as txt file to mobile phone file system
+  static Future<File> saveFile(String filePath, String fileContent) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final appPath = (await getApplicationDocumentsDirectory()).path;
+    final file = File('${appPath}/$filePath');
+    return file.writeAsString('$fileContent');
   }
 
   /* ------------------------------------------------------------------------ */
