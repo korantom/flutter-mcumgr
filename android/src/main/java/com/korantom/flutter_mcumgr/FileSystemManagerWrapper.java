@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.PluginRegistry;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.FsManager;
 import io.runtime.mcumgr.transfer.DownloadCallback;
@@ -22,6 +23,10 @@ public class FileSystemManagerWrapper extends ManagerWrapper implements Download
 
     public FileSystemManagerWrapper(String name, @NonNull FlutterPlugin.FlutterPluginBinding flutterPluginBinding) {
         super(name, flutterPluginBinding);
+    }
+
+    public FileSystemManagerWrapper(String name, PluginRegistry.Registrar registrar) {
+        super(name, registrar);
     }
 
     /* --------------------------------------------------------------------------------------- */

@@ -55,6 +55,7 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+        System.out.println("flutterPluginBinding");
         this.context = flutterPluginBinding.getApplicationContext();
 
         this.methodChannel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), String.format("%s/method", NAMESPACE));
@@ -78,7 +79,17 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
     // pre-Flutter-1.12 Android projects
     public static void registerWith(Registrar registrar) {
         final FlutterMcumgrPlugin plugin = new FlutterMcumgrPlugin();
-        // TODO:
+        System.out.println("registerWith");
+        plugin.context = registrar.activeContext();
+
+        plugin.methodChannel = new MethodChannel(registrar.messenger(), String.format("%s/method", NAMESPACE));
+
+        plugin.imageManager = new ImageManagerWrapper(String.format("%s/event/upload", NAMESPACE), registrar);
+        plugin.firmwareUpgradeManager = new FirmwareUpgradeManagerWrapper(String.format("%s/event/upgrade", NAMESPACE), registrar);
+        plugin.fsManager = new FileSystemManagerWrapper(String.format("%s/event/file", NAMESPACE), registrar);
+        plugin.uartManager = new UARTManager(plugin.context);
+
+        plugin.methodChannel.setMethodCallHandler(plugin);
     }
 
     /* ---------------------------------------------------------------------------------------*/

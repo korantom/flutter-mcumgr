@@ -13,6 +13,7 @@ import java.util.List;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.PluginRegistry;
 import io.runtime.mcumgr.McuMgrCallback;
 import io.runtime.mcumgr.exception.McuMgrException;
 import io.runtime.mcumgr.managers.ImageManager;
@@ -30,6 +31,10 @@ public class ImageManagerWrapper extends ManagerWrapper implements UploadCallbac
 
     public ImageManagerWrapper(String name, @NonNull FlutterPlugin.FlutterPluginBinding flutterPluginBinding) {
         super(name, flutterPluginBinding);
+    }
+
+    public ImageManagerWrapper(String name, PluginRegistry.Registrar registrar) {
+        super(name, registrar);
     }
 
     /* ------------------------------------------------------------------------------------------ */

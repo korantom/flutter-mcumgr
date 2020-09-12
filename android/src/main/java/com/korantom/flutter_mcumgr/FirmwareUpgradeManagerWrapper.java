@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.PluginRegistry;
 import io.runtime.mcumgr.dfu.FirmwareUpgradeCallback;
 import io.runtime.mcumgr.dfu.FirmwareUpgradeController;
 import io.runtime.mcumgr.dfu.FirmwareUpgradeManager;
@@ -19,6 +20,10 @@ public class FirmwareUpgradeManagerWrapper extends ManagerWrapper implements Fir
 
     public FirmwareUpgradeManagerWrapper(String name, @NonNull FlutterPlugin.FlutterPluginBinding flutterPluginBinding) {
         super(name, flutterPluginBinding);
+    }
+
+    public FirmwareUpgradeManagerWrapper(String name, PluginRegistry.Registrar registrar) {
+        super(name, registrar);
     }
 
     /* --------------------------------------------------------------------------------------- */
