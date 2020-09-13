@@ -5,7 +5,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 
 import 'firmware_image.dart';
 
@@ -229,9 +228,7 @@ class FlutterMcuManager {
 
   /// Save a string as txt file to mobile phone file system
   static Future<File> saveFile(String filePath, String fileContent) async {
-    final directory = await getApplicationDocumentsDirectory();
-    final appPath = (await getApplicationDocumentsDirectory()).path;
-    final file = File('${appPath}/$filePath');
+    final file = File('$filePath');
     return file.writeAsString('$fileContent');
   }
 
