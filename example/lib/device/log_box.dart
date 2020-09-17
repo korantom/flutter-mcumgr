@@ -4,51 +4,47 @@ import 'package:flutter/services.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 import 'package:flutter_mcumgr/flutter_mcu_manager.dart';
 
-class LogBox extends StatefulWidget {
+class FilesBox extends StatefulWidget {
   final BluetoothDevice device;
 
-  const LogBox({this.device});
+  const FilesBox({this.device});
 
   @override
-  _LogBoxState createState() => _LogBoxState();
+  _FilesBoxState createState() => _FilesBoxState();
 }
 
-class _LogBoxState extends State<LogBox> {
+class _FilesBoxState extends State<FilesBox> {
   String mountPoint = '/storage';
   String filePath = '/storage/last_boot';
   final TextEditingController filePathController =
       TextEditingController(text: 'last_boot');
-  String fileContent = "File Content";
-  String commandResult = "Command Result";
+
+  String commandText = 'SAVE_LAST_BOOT';
+  final TextEditingController commandTextController =
+      TextEditingController(text: 'SAVE_LAST_BOOT');
+
+  String fileContent = "_";
+  String commandResult = "_";
 
   @override
   Widget build(BuildContext context) {
+    // return Placeholder();
     return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Send Command"),
-          IconButton(
-            icon: Icon(Icons.file_upload),
-            onPressed: () async {
-              String res =
-                  await FlutterMcuManager.sendTextCommand("SAVE_LAST_BOOT");
-              setState(() {
-                this.commandResult = res;
-              });
-            },
-          ),
-          Text(commandResult),
+          Text("Send Command", style: Theme.of(context).textTheme.headline5),
+          _commandTextField(),
+          Text("response: ${this.commandResult}"),
           Divider(),
-          Text('Download'),
-          Divider(),
+          SizedBox(height: 50),
+          Text('Download File', style: Theme.of(context).textTheme.headline5),
           _fileTextField(),
-          Divider(),
-          Text(this.filePath),
+          Text("path: ${this.filePath}"),
           _progressInfo(),
           _statusInfo(),
-          Text(fileContent),
+          Text("file content: ${this.fileContent}"),
         ],
       ),
     );
@@ -64,14 +60,6 @@ class _LogBoxState extends State<LogBox> {
   }
 
   void _setMountPoint(String mountPoint) {}
-
-  Widget _loadButton() {
-    return RaisedButton(
-        child: Text('Load'),
-        onPressed: () async {
-          _download(filePath);
-        });
-  }
 
   Widget _fileTextField() {
     return Row(
@@ -107,6 +95,30 @@ class _LogBoxState extends State<LogBox> {
       builder: (c, snapshot) {
         return Text("status: ${snapshot.data}");
       },
+    );
+  }
+
+/* ------------------------------------------------------------------------ */
+  void _sendTextCommand(String command) async {
+    String res = await FlutterMcuManager.sendTextCommand(command);
+    setState(() {
+      this.commandResult = res;
+    });
+  }
+
+  Widget _commandTextField() {
+    return Row(
+      children: [
+        Flexible(
+          child: TextField(
+            controller: commandTextController,
+            onChanged: (value) => setState(() => this.commandText = value),
+          ),
+        ),
+        IconButton(
+            icon: Icon(Icons.file_upload),
+            onPressed: () => _sendTextCommand(this.commandText))
+      ],
     );
   }
 }

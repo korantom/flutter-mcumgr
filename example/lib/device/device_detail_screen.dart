@@ -32,7 +32,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
         icon: Icon(Icons.file_upload), title: Text('Image')),
     BottomNavigationBarItem(
         icon: Icon(Icons.file_upload), title: Text('Upgrade')),
-    BottomNavigationBarItem(icon: Icon(Icons.folder), title: Text('Logs')),
+    BottomNavigationBarItem(icon: Icon(Icons.folder), title: Text('Files')),
   ];
 
   @override
@@ -43,7 +43,7 @@ class _DeviceDetailScreenState extends State<DeviceDetailScreen> {
       EchoBox(device: widget.device),
       UploadBox(device: widget.device),
       UpgradeBox(device: widget.device),
-      LogBox(device: widget.device),
+      FilesBox(device: widget.device),
     ]);
   }
 
