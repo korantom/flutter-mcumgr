@@ -228,13 +228,7 @@ public class SwiftFlutterMcumgrPlugin: NSObject, FlutterPlugin {
         defaultManager.reset { (response, error) in
         }
     }
-    
-    /* ---------------------------------------------------------------------------------------*/
-    
-    func _saveFileToDownloadFolder(filePath: String, fileContent: String, result: @escaping FlutterResult) -> Void{
-        let x = getDocumentsDirectory()
-    }
-    
+        
     /* ---------------------------------------------------------------------------------------*/
     
     private func dataFrom(url: URL) -> Data? {
