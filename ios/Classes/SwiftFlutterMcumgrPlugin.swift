@@ -122,7 +122,16 @@ public class SwiftFlutterMcumgrPlugin: NSObject, FlutterPlugin {
             
         }else if call.method == "sendTextCommand"{
             uartManager.send(command: TextCommand(text: arguements["text"] as! String), result: result)
-            
+   
+        }else if call.method == "pauseTransfer"{
+                   fileSystemManager.pauseTransfer(result: result)
+              
+        }else if call.method == "resumeTransfer"{
+                   fileSystemManager.resumeTransfer(result: result)
+              
+        }else if call.method == "cancelTransfer"{
+                   fileSystemManager.cancelTransfer(result: result)
+              
         }else{
             result(FlutterMethodNotImplemented)
             
@@ -218,6 +227,12 @@ public class SwiftFlutterMcumgrPlugin: NSObject, FlutterPlugin {
         let defaultManager = DefaultManager(transporter: self.transporter)
         defaultManager.reset { (response, error) in
         }
+    }
+    
+    /* ---------------------------------------------------------------------------------------*/
+    
+    func _saveFileToDownloadFolder(filePath: String, fileContent: String, result: @escaping FlutterResult) -> Void{
+        let x = getDocumentsDirectory()
     }
     
     /* ---------------------------------------------------------------------------------------*/

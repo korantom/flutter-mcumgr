@@ -20,6 +20,18 @@ class FileSystemManagerWrapper: ManagerWrapper{
         _ = self.fileSystemManager?.download(name: filePath, delegate: self)
     }
     
+    func pauseTransfer(result: @escaping FlutterResult) -> Void{
+        self.fileSystemManager?.pauseTransfer()
+    }
+    
+    func resumeTransfer(result: @escaping FlutterResult) -> Void{
+        self.fileSystemManager?.continueTransfer()
+    }
+    
+    func cancelTransfer(result: @escaping FlutterResult) -> Void{
+        self.fileSystemManager?.cancelTransfer()
+    }
+    
 }
 
 

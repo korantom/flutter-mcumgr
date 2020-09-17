@@ -30,6 +30,7 @@ import io.runtime.mcumgr.response.McuMgrResponse;
 import io.runtime.mcumgr.response.dflt.McuMgrEchoResponse;
 import no.nordicsemi.android.ble.callback.SuccessCallback;
 
+// TODO: rename methods
 
 /**
  * FlutterMcumgrPlugin
@@ -157,6 +158,15 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
                 break;
             case "sendTextCommand":
                 uartManager.send((String) arguments.get("text"), result);
+                break;
+            case "pauseTransfer":
+                fsManager._pauseTransfer(result);
+                break;
+            case "resumeTransfer":
+                fsManager._resumeTransfer(result);
+                break;
+            case "cancelTransfer":
+                fsManager._cancelTransfer(result);
                 break;
             default:
                 result.notImplemented();

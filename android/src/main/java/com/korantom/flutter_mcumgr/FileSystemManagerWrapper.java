@@ -59,6 +59,21 @@ public class FileSystemManagerWrapper extends ManagerWrapper implements Download
         this.statusStreamHandler.send("Download Started");
     }
 
+    public void _pauseTransfer(@NonNull final MethodChannel.Result result) {
+        if (transferController == null) return;
+        transferController.pause();
+    }
+
+    public void _resumeTransfer(@NonNull final MethodChannel.Result result) {
+        if (transferController == null) return;
+        transferController.resume();
+    }
+
+    public void _cancelTransfer(@NonNull final MethodChannel.Result result) {
+        if (transferController == null) return;
+        transferController.cancel();
+    }
+
     /* --------------------------------------------------------------------------------------- */
 
 

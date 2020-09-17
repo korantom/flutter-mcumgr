@@ -226,6 +226,20 @@ class FlutterMcuManager {
     return fileContent;
   }
 
+  static Future<void> pauseTransfer() async {
+    await _methodChannel.invokeMethod('pauseTransfer', <String, dynamic>{});
+  }
+
+  static Future<void> resumeTransfer() async {
+    await _methodChannel.invokeMethod('resumeTransfer', <String, dynamic>{});
+  }
+
+  static Future<void> cancelTransfer() async {
+    await _methodChannel.invokeMethod('cancelTransfer', <String, dynamic>{});
+  }
+
+  /* ------------------------------------------------------------------------ */
+
   /// Save a string as txt file to mobile phone file system
   static Future<File> saveFile(String filePath, String fileContent) async {
     final file = File('$filePath');
