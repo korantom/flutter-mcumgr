@@ -240,10 +240,11 @@ class FlutterMcuManager {
 
   /* ------------------------------------------------------------------------ */
 
-  static Future<String> readSettings() async {
-    final settings =
+  static Future<Map<String, dynamic>> readSettings() async {
+    final settingsJsonString =
         await _methodChannel.invokeMethod('readSettings', <String, dynamic>{});
-    return settings;
+    final settingJson = jsonDecode(settingsJsonString);
+    return settingJson;
   }
 
   /// Send settings json to update settings
