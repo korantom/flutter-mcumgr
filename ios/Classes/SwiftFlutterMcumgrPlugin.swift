@@ -31,7 +31,9 @@ public class SwiftFlutterMcumgrPlugin: NSObject, FlutterPlugin {
         didSet {
             if let uuid = self.uuid {
                 self.transporter = McuMgrBleTransport(uuid)
-                self.uartManager.bluetoothPeripheral = self.centralManager.retrievePeripherals(withIdentifiers: [uuid]).first
+                let peripheral = self.centralManager.retrievePeripherals(withIdentifiers: [uuid]).first
+                self.uartManager.bluetoothPeripheral = peripheral
+                self.setttingsManager.bluetoothPeripheral = peripheral
             }
         }
     }
@@ -50,6 +52,7 @@ public class SwiftFlutterMcumgrPlugin: NSObject, FlutterPlugin {
     private let firmwareUpgradeManager: FirmwareUpgradeManagerWrapper
     private let fileSystemManager: FileSystemManagerWrapper
     private let uartManager: UARTManager
+    private let setttingsManager: SettingsManager
     
     init(imageManager: ImageManagerWrapper, firmwareUpgradeManager: FirmwareUpgradeManagerWrapper, fileSystemManager: FileSystemManagerWrapper) {
         
@@ -58,6 +61,7 @@ public class SwiftFlutterMcumgrPlugin: NSObject, FlutterPlugin {
         self.firmwareUpgradeManager = firmwareUpgradeManager
         self.fileSystemManager = fileSystemManager
         self.uartManager = UARTManager()
+        self.setttingsManager = SettingsManager()
         
         super.init()
         
@@ -131,6 +135,12 @@ public class SwiftFlutterMcumgrPlugin: NSObject, FlutterPlugin {
               
         }else if call.method == "cancelTransfer"{
                    fileSystemManager.cancelTransfer(result: result)
+            
+        }else if call.method == "readSettings"{
+            setttingsManager.read(result: result)
+            
+        }else if call.method == "changeSettings"{
+            setttingsManager.send(setting: arguements["settings"] as! String, result: result)
               
         }else{
             result(FlutterMethodNotImplemented)
@@ -258,7 +268,8 @@ extension SwiftFlutterMcumgrPlugin: CBCentralManagerDelegate{
         
         log("Discovering services...", ofCategory: .default, atLevel: .verbose)
         log("peripheral.discoverServices([\(self.uartManager.UARTServiceUUID.uuidString)])", ofCategory: .default, atLevel: .verbose)
-        peripheral.discoverServices([self.uartManager.UARTServiceUUID])
+        peripheral.discoverServices([self.uartManager.UARTServiceUUID, self.setttingsManager.settingsServiceUUID])
+        
     }
 }
 

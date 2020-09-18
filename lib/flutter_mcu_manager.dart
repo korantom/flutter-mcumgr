@@ -240,6 +240,26 @@ class FlutterMcuManager {
 
   /* ------------------------------------------------------------------------ */
 
+  static Future<String> readSettings() async {
+    final settings =
+        await _methodChannel.invokeMethod('readSettings', <String, dynamic>{});
+    return settings;
+  }
+
+  /// Send settings json to update settings
+  ///
+  /// - on success returns true
+  /// - on fail throw exception
+  static Future<bool> changeSettings(String settings) async {
+    final res =
+        await _methodChannel.invokeMethod('changeSettings', <String, dynamic>{
+      'settings': settings,
+    });
+    return res;
+  }
+
+  /* ------------------------------------------------------------------------ */
+
   /// Save a string as txt file to mobile phone file system
   static Future<File> saveFile(String filePath, String fileContent) async {
     final file = File('$filePath');
