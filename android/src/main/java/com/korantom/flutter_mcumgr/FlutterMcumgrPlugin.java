@@ -49,6 +49,7 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
     private FirmwareUpgradeManagerWrapper firmwareUpgradeManager;
     private FileSystemManagerWrapper fsManager;
     private UARTManager uartManager;
+    private SettingsManager settingsManager;
 
 
 
@@ -65,6 +66,7 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
         this.firmwareUpgradeManager = new FirmwareUpgradeManagerWrapper(String.format("%s/event/upgrade", NAMESPACE), flutterPluginBinding);
         this.fsManager = new FileSystemManagerWrapper(String.format("%s/event/file", NAMESPACE), flutterPluginBinding);
         this.uartManager = new UARTManager(context);
+        this.settingsManager = new SettingsManager(context);
 
         this.methodChannel.setMethodCallHandler(this);
     }
@@ -89,6 +91,8 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
         plugin.firmwareUpgradeManager = new FirmwareUpgradeManagerWrapper(String.format("%s/event/upgrade", NAMESPACE), registrar);
         plugin.fsManager = new FileSystemManagerWrapper(String.format("%s/event/file", NAMESPACE), registrar);
         plugin.uartManager = new UARTManager(plugin.context);
+        plugin.settingsManager = new SettingsManager(plugin.context);
+
 
         plugin.methodChannel.setMethodCallHandler(plugin);
     }
@@ -168,6 +172,12 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
             case "cancelTransfer":
                 fsManager._cancelTransfer(result);
                 break;
+            case "readSettings":
+                settingsManager.read(result);
+                break;
+            case "changeSettings":
+                settingsManager.send((String) arguments.get("settings"),result);
+                break;
             default:
                 result.notImplemented();
                 break;
@@ -204,6 +214,8 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
         this.imageManager.setImageManager(new ImageManager(this.transport));
         this.firmwareUpgradeManager.setFirmwareUpgradeManager(new FirmwareUpgradeManager(this.transport));
         this.fsManager.setFsManager(new FsManager(this.transport));
+
+        // TODO: refactor
         this.uartManager.connect(device).timeout(100000)
                 .retry(3, 100)
                 .done(new SuccessCallback() {
@@ -214,6 +226,17 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
                     }
                 })
                 .enqueue();
+        this.settingsManager.connect(device).timeout(100000)
+                .retry(3, 100)
+                .done(new SuccessCallback() {
+                    @Override
+                    public void onRequestCompleted(@NonNull BluetoothDevice device) {
+                        System.out.println("Device initiated");
+                        System.out.println(device);
+                    }
+                })
+                .enqueue();
+        System.out.println(settingsManager);
         System.out.println(uartManager);
     }
 
