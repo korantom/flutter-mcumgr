@@ -26,7 +26,12 @@ public class SwiftFlutterMcumgrPlugin: NSObject, FlutterPlugin {
     }
     
     private var centralManager: CBCentralManager
-    var bluetoothPeripheral: CBPeripheral?
+    private var bluetoothPeripheral: CBPeripheral?
+    private let serviceUUIDs: [CBUUID]
+    private let serviceServiceManagers: [CBUUID : ServiceManager]
+    private var characteristicServiceManagers: [CBUUID : ServiceManager]
+    private let serviceManagers: [ServiceManager]
+    
     
     private var uuid: UUID? {
         didSet {
@@ -52,8 +57,8 @@ public class SwiftFlutterMcumgrPlugin: NSObject, FlutterPlugin {
     private let imageManager: ImageManagerWrapper
     private let firmwareUpgradeManager: FirmwareUpgradeManagerWrapper
     private let fileSystemManager: FileSystemManagerWrapper
-    private let uartManager: UARTManager
-    private let setttingsManager: SettingsManager
+    private let uartManager: UARTServiceManager
+    private let setttingsManager: SettingsServiceManager
     
     init(imageManager: ImageManagerWrapper, firmwareUpgradeManager: FirmwareUpgradeManagerWrapper, fileSystemManager: FileSystemManagerWrapper) {
         
@@ -61,8 +66,18 @@ public class SwiftFlutterMcumgrPlugin: NSObject, FlutterPlugin {
         self.imageManager = imageManager
         self.firmwareUpgradeManager = firmwareUpgradeManager
         self.fileSystemManager = fileSystemManager
-        self.uartManager = UARTManager()
-        self.setttingsManager = SettingsManager()
+        self.uartManager = UARTServiceManager()
+        self.setttingsManager = SettingsServiceManager()
+        
+        
+        self.serviceUUIDs                   = [uartManager.serviceUUID,
+                                               setttingsManager.serviceUUID]
+        self.serviceServiceManagers         = [uartManager.serviceUUID:uartManager,
+                                               setttingsManager.serviceUUID:setttingsManager]
+        
+        self.characteristicServiceManagers  = [:]
+        
+        self.serviceManagers = [uartManager, setttingsManager]
         
         super.init()
         
@@ -127,22 +142,22 @@ public class SwiftFlutterMcumgrPlugin: NSObject, FlutterPlugin {
             
         }else if call.method == "sendTextCommand"{
             uartManager.send(command: TextCommand(text: arguements["text"] as! String), result: result)
-   
+            
         }else if call.method == "pauseTransfer"{
-                   fileSystemManager.pauseTransfer(result: result)
-              
+            fileSystemManager.pauseTransfer(result: result)
+            
         }else if call.method == "resumeTransfer"{
-                   fileSystemManager.resumeTransfer(result: result)
-              
+            fileSystemManager.resumeTransfer(result: result)
+            
         }else if call.method == "cancelTransfer"{
-                   fileSystemManager.cancelTransfer(result: result)
+            fileSystemManager.cancelTransfer(result: result)
             
         }else if call.method == "readSettings"{
             setttingsManager.read(result: result)
             
         }else if call.method == "changeSettings"{
             setttingsManager.send(setting: arguements["settings"] as! String, result: result)
-              
+            
         }else{
             result(FlutterMethodNotImplemented)
             
@@ -260,7 +275,8 @@ extension SwiftFlutterMcumgrPlugin: CBCentralManagerDelegate{
     }
     
     public func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        log("[Callback] Central Manager did connect peripheral", atLevel: .verbose)
+        log("[Callback] Central Manager did connect peripheral", atLevel: .info)
+        
         if let name = peripheral.name {
             log("Connected to: \(name)", atLevel: .verbose)
         } else {
@@ -268,18 +284,152 @@ extension SwiftFlutterMcumgrPlugin: CBCentralManagerDelegate{
         }
         
         log("Discovering services...", atLevel: .verbose)
-        log("peripheral.discoverServices([\(self.uartManager.UARTServiceUUID.uuidString)])", atLevel: .verbose)
-        peripheral.discoverServices([self.uartManager.UARTServiceUUID, self.setttingsManager.settingsServiceUUID])
+        log("peripheral.discoverServices([\(self.serviceUUIDs)])", atLevel: .verbose)
+        peripheral.discoverServices(self.serviceUUIDs)
         
     }
 }
 
 extension SwiftFlutterMcumgrPlugin: CBPeripheralDelegate{
     
+    public func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+        
+        guard error == nil else {
+            log("didDiscoverServices failed", atLevel: .info)
+            log(error!.localizedDescription.description, atLevel: .verbose)
+            return
+        }
+        
+        log("didDiscoverServices", atLevel: .info)
+        log("\(peripheral.services!.count) Services found", atLevel: .verbose)
+        
+        for aService: CBService in peripheral.services! {
+            if self.serviceUUIDs.contains(aService.uuid) {
+                log("peripheral.discoverCharacteristics(nil, for: \(aService.uuid.uuidString))", atLevel: .verbose)
+                bluetoothPeripheral!.discoverCharacteristics(nil, for: aService)
+            }
+        }
+        // TODO: cheeck all services discovered
+    }
+    
+    public func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+        
+        guard error == nil else {
+            log("didDiscoverCharacteristicsFor service \(service.uuid) failed", atLevel: .info)
+            log(error!.localizedDescription.description, atLevel: .verbose)
+            return
+        }
+
+        log("didDiscoverCharacteristicsFor service \(service.uuid)", atLevel: .info)
+        
+        guard var serviceManager = self.serviceManagers.first(where: { (ServiceManager) -> Bool in
+            return ServiceManager.serviceUUID.isEqual(service.uuid)
+        }) else {
+            log("unkown service \(service)", atLevel: .info)
+            return
+        }
+
+        
+        for aCharacteristic : CBCharacteristic in service.characteristics! {
+            serviceManager.characteristics[aCharacteristic.uuid] = aCharacteristic
+            characteristicServiceManagers[aCharacteristic.uuid] = serviceManager
+            log( "Characteristic \(aCharacteristic.uuid) found", atLevel: .verbose)
+        }
+        
+        for txUUID in serviceManager.TXCharacteristicsUUIDs {
+            if let txCharacteristic = serviceManager.characteristics[txUUID]{
+                bluetoothPeripheral!.setNotifyValue(true, for: txCharacteristic)
+            }
+        }
+        
+        if serviceManager.characteristics.count != serviceManager.characteristicsUUIDs.count{
+            log( "\(service.uuid) service does not have all required characteristics.", atLevel: .verbose)
+            return
+        }
+        
+        // TODO: serviceManager.characteristics.keys contains all rx and tx ..
+        
+    }
+    
+    public func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+        
+        guard error == nil else {
+            log("Enabling notifications for \(characteristic.uuid) failed", atLevel: .verbose)
+            log(error!.localizedDescription.description, atLevel: .verbose)
+            return
+        }
+        
+        if characteristic.isNotifying {
+            log("Notifications enabled for characteristic: \(characteristic.uuid)", atLevel: .verbose)
+        } else {
+            log("Notifications disabled for characteristic: \(characteristic.uuid)", atLevel: .verbose)
+        }
+    }
+    
+    public func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
+
+        guard var serviceManager = self.characteristicServiceManagers[characteristic.uuid] else{
+            //error should not happen
+            return
+        }
+        
+        guard error == nil else {
+            log("didWriteValueFor characteristic \(characteristic.uuid) failed", atLevel: .info)
+            log(error!.localizedDescription.description, atLevel: .verbose)
+            
+            serviceManager.onDidWriteToCharacteristic?(FlutterError(code: "WRITE_TO_CHARACTERISTIC_ERROR",
+                                                                    message: "Failed to write value to characteristic",
+                                                                    details: error!.localizedDescription.description))
+            serviceManager.onDidWriteToCharacteristic = nil
+            return
+        }
+        
+        log("didWriteValueFor characteristic \(characteristic.uuid)", ofCategory: .settingsManager, atLevel: .info)
+        serviceManager.onDidWriteToCharacteristic?(true)
+        serviceManager.onDidWriteToCharacteristic = nil
+    }
+    
+    public func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+        
+        guard var serviceManager = self.characteristicServiceManagers[characteristic.uuid] else{
+            //error should not happen
+            return
+        }
+        
+        guard error == nil else {
+            log( "didUpdateValueFor characteristic \(characteristic.uuid) failed", atLevel: .info)
+            log( error!.localizedDescription.description, atLevel: .verbose)
+            serviceManager.onDidUpdateValueForCharacterictic?(FlutterError(code: "UPDATE_VALUE_FOR_CHARACTERISTIC_ERROR",
+                                                                           message: "Failed to update value for characteristic",
+                                                                           details: error!.localizedDescription.description))
+            serviceManager.onDidUpdateValueForCharacterictic = nil
+            return
+        }
+        
+        log( "didUpdateValueFor characteristic \(characteristic.uuid)", atLevel: .info)
+
+        guard let bytesReceived = characteristic.value else {
+            log( "Notification received from: \(characteristic.uuid.uuidString), with empty value", atLevel: .verbose)
+            serviceManager.onDidUpdateValueForCharacterictic?("")
+            serviceManager.onDidUpdateValueForCharacterictic = nil
+            return
+        }
+
+        log( "Notification received from: \(characteristic.uuid.uuidString), with value: 0x\(bytesReceived.hexString)", atLevel: .verbose)
+        
+        if let validUTF8String = String(data: bytesReceived, encoding: .utf8) {
+            log( "\"\(validUTF8String)\" received", atLevel: .verbose)
+            serviceManager.onDidUpdateValueForCharacterictic?(validUTF8String)
+        } else {
+            log( "\"0x\(bytesReceived.hexString)\" received", atLevel: .verbose)
+            serviceManager.onDidUpdateValueForCharacterictic?(bytesReceived.hexString)
+        }
+        serviceManager.onDidUpdateValueForCharacterictic = nil
+    }
+    
 }
 
-
-extension SettingsManager: FlutterMcuMgrLogDelegate {
+extension SwiftFlutterMcumgrPlugin: FlutterMcuMgrLogDelegate {
     
     public func log(_ msg: String,
                     ofCategory category: FlutterMcuMgrLogCategory,
