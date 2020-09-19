@@ -32,6 +32,7 @@ public enum FlutterMcuMgrLogLevel: Int {
 /// The log category indicates the component that created the log entry.
 public enum FlutterMcuMgrLogCategory: String {
     case settingsManager = "SettingsManager"
+    case flutterPlugin = "SwiftFlutterMcumgrPlugin"
 }
 
 /// The Logger delegate.

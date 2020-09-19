@@ -15,11 +15,7 @@ class SettingsManager: NSObject{
     let settingsServiceUUID: CBUUID
     let settingsCharacteristicUUID: CBUUID
     
-    var bluetoothPeripheral: CBPeripheral?{
-        didSet{
-            bluetoothPeripheral?.delegate = self
-        }
-    }
+    var bluetoothPeripheral: CBPeripheral?
     private var settingsCharacteristic: CBCharacteristic?
     
     private var onDidUpdateValueForCharacterictic: ((Any) -> Void)? //TODO: rename

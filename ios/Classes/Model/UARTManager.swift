@@ -27,11 +27,7 @@ class UARTManager: NSObject{
     let UARTRXCharacteristicUUID: CBUUID
     let UARTTXCharacteristicUUID: CBUUID
     
-    var bluetoothPeripheral: CBPeripheral?{
-        didSet{
-            bluetoothPeripheral?.delegate = self
-        }
-    }
+    var bluetoothPeripheral: CBPeripheral?
     private var uartRXCharacteristic: CBCharacteristic?
     private var uartTXCharacteristic: CBCharacteristic?
     

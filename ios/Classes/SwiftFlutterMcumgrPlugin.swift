@@ -26,14 +26,15 @@ public class SwiftFlutterMcumgrPlugin: NSObject, FlutterPlugin {
     }
     
     private var centralManager: CBCentralManager
+    var bluetoothPeripheral: CBPeripheral?
     
     private var uuid: UUID? {
         didSet {
             if let uuid = self.uuid {
                 self.transporter = McuMgrBleTransport(uuid)
-                let peripheral = self.centralManager.retrievePeripherals(withIdentifiers: [uuid]).first
-                self.uartManager.bluetoothPeripheral = peripheral
-                self.setttingsManager.bluetoothPeripheral = peripheral
+                self.bluetoothPeripheral = self.centralManager.retrievePeripherals(withIdentifiers: [uuid]).first
+                self.uartManager.bluetoothPeripheral = bluetoothPeripheral
+                self.setttingsManager.bluetoothPeripheral = bluetoothPeripheral
             }
         }
     }
@@ -188,11 +189,11 @@ public class SwiftFlutterMcumgrPlugin: NSObject, FlutterPlugin {
         
         self.uuid = uuid
         
-        guard let bluetoothPeripheral = uartManager.bluetoothPeripheral else {
+        guard let bluetoothPeripheral = self.bluetoothPeripheral else {
             result(false)
             return
         }
-        
+        bluetoothPeripheral.delegate = self
         centralManager.connect(bluetoothPeripheral, options: nil)
         
         result(true)
@@ -245,7 +246,7 @@ public class SwiftFlutterMcumgrPlugin: NSObject, FlutterPlugin {
         do {
             return try Data(contentsOf: url)
         } catch {
-            log("Error reading file: \(error)", ofCategory: .default, atLevel: .error)
+            log("Error reading file: \(error)", atLevel: .error)
             return nil
         }
     }
@@ -255,29 +256,35 @@ public class SwiftFlutterMcumgrPlugin: NSObject, FlutterPlugin {
 extension SwiftFlutterMcumgrPlugin: CBCentralManagerDelegate{
     
     public func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        log("\(central.state)", ofCategory: .default, atLevel: .verbose)
+        log("\(central.state)", atLevel: .verbose)
     }
     
     public func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        log("[Callback] Central Manager did connect peripheral", ofCategory: .default, atLevel: .verbose)
+        log("[Callback] Central Manager did connect peripheral", atLevel: .verbose)
         if let name = peripheral.name {
-            log("Connected to: \(name)", ofCategory: .default, atLevel: .verbose)
+            log("Connected to: \(name)", atLevel: .verbose)
         } else {
-            log("Connected to device", ofCategory: .default, atLevel: .verbose)
+            log("Connected to device", atLevel: .verbose)
         }
         
-        log("Discovering services...", ofCategory: .default, atLevel: .verbose)
-        log("peripheral.discoverServices([\(self.uartManager.UARTServiceUUID.uuidString)])", ofCategory: .default, atLevel: .verbose)
+        log("Discovering services...", atLevel: .verbose)
+        log("peripheral.discoverServices([\(self.uartManager.UARTServiceUUID.uuidString)])", atLevel: .verbose)
         peripheral.discoverServices([self.uartManager.UARTServiceUUID, self.setttingsManager.settingsServiceUUID])
         
     }
 }
 
-extension SwiftFlutterMcumgrPlugin: McuMgrLogDelegate {
+extension SwiftFlutterMcumgrPlugin: CBPeripheralDelegate{
+    
+}
+
+
+extension SettingsManager: FlutterMcuMgrLogDelegate {
     
     public func log(_ msg: String,
-                    ofCategory category: McuMgrLogCategory,
-                    atLevel level: McuMgrLogLevel) {
+                    ofCategory category: FlutterMcuMgrLogCategory,
+                    atLevel level: FlutterMcuMgrLogLevel) {
+        
         if #available(iOS 10.0, *) {
             os_log("%{public}@", log: category.log, type: level.type, msg)
         } else {
@@ -285,30 +292,14 @@ extension SwiftFlutterMcumgrPlugin: McuMgrLogDelegate {
         }
     }
     
-}
-
-extension McuMgrLogLevel {
     
-    /// Mapping from Mcu log levels to system log types.
-    @available(iOS 10.0, *)
-    var type: OSLogType {
-        switch self {
-        case .debug:       return .debug
-        case .verbose:     return .debug
-        case .info:        return .info
-        case .application: return .default
-        case .warning:     return .error
-        case .error:       return .fault
+    public func log(_ msg: String, atLevel level: FlutterMcuMgrLogLevel) {
+        
+        if #available(iOS 10.0, *) {
+            os_log("%{public}@", log: FlutterMcuMgrLogCategory.flutterPlugin.log, type: level.type, msg)
+        } else {
+            NSLog("%@", msg)
         }
-    }
-    
-}
-
-extension McuMgrLogCategory {
-    
-    @available(iOS 10.0, *)
-    var log: OSLog {
-        return OSLog(subsystem: Bundle.main.bundleIdentifier!, category: rawValue)
     }
     
 }
