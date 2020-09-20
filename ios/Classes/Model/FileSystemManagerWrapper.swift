@@ -11,7 +11,7 @@ import McuManager
 class FileSystemManagerWrapper: ManagerWrapper{
     var fileSystemManager: FileSystemManager?
     var imageData: Data?
-    private var onDownload: ((String) -> Void)?
+    private var onDownload: ((Any) -> Void)?
     
     func readFile(filePath: String, result: @escaping FlutterResult) -> Void{
         onDownload =  { (message) in
@@ -59,7 +59,8 @@ extension FileSystemManagerWrapper: FileDownloadDelegate{
     public func download(of name: String, didFinish data: Data) {
         self.statusStreamHandler.send("\(name) (\(data.count) bytes)")
         
-        onDownload?(String(data: data, encoding: .utf8) ?? "No data")
+        onDownload?(FlutterStandardTypedData(bytes: data))
+        
         onDownload =  nil
     }
     

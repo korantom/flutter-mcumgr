@@ -217,13 +217,25 @@ class FlutterMcuManager {
     return result;
   }
 
+  static Future<String> readFileAsString(String filePath) async {
+    String string;
+    final bytes = await readFileAsBytes(filePath);
+    try {
+      string = utf8.decode(bytes);
+    } catch (e) {
+      string = e;
+    }
+    return string;
+  }
+
   /// Read a file from device file system
-  static Future<String> readFile(String filePath) async {
-    final fileContent =
+  static Future<Uint8List> readFileAsBytes(String filePath) async {
+    final bytes =
         await _methodChannel.invokeMethod('readFile', <String, dynamic>{
       'filePath': filePath,
     });
-    return fileContent;
+
+    return bytes;
   }
 
   static Future<void> pauseTransfer() async {
@@ -261,10 +273,18 @@ class FlutterMcuManager {
 
   /* ------------------------------------------------------------------------ */
 
-  /// Save a string as txt file to mobile phone file system
-  static Future<File> saveFile(String filePath, String fileContent) async {
-    final file = File('$filePath');
-    return file.writeAsString('$fileContent');
+  /// Save a string as a txt file to the mobile phone file system
+  static Future<File> saveFileAsString(
+      String filePath, String fileContent) async {
+    final file = File(filePath);
+    return file.writeAsString(fileContent);
+  }
+
+  /// Save a bytes as file to the mobile phone file system
+  static Future<File> saveFileAsBytes(
+      String filePath, Uint8List fileContent) async {
+    final file = File(filePath);
+    return file.writeAsBytes(fileContent);
   }
 
   /* ------------------------------------------------------------------------ */

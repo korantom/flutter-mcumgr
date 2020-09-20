@@ -97,12 +97,8 @@ public class FileSystemManagerWrapper extends ManagerWrapper implements Download
 
     @Override
     public void onDownloadCompleted(@NotNull byte[] data) {
-        this.statusStreamHandler.send(data.length);
-        try {
-            onFinish.successOnMain(new String(data, "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            onFinish.errorOnMain("READ_FILE_ERROR", "Failed to decode data to string", e.getLocalizedMessage());
-        }
+        this.statusStreamHandler.send(data.length + "bytes");
+        onFinish.successOnMain(data);
         onFinish = null;
     }
 

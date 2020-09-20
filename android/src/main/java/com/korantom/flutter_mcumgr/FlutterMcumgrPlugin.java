@@ -28,6 +28,7 @@ import io.runtime.mcumgr.managers.FsManager;
 import io.runtime.mcumgr.managers.ImageManager;
 import io.runtime.mcumgr.response.McuMgrResponse;
 import io.runtime.mcumgr.response.dflt.McuMgrEchoResponse;
+import no.nordicsemi.android.ble.callback.FailCallback;
 import no.nordicsemi.android.ble.callback.SuccessCallback;
 
 // TODO: rename methods
@@ -176,7 +177,7 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
                 settingsManager.read(result);
                 break;
             case "changeSettings":
-                settingsManager.send((String) arguments.get("settings"),result);
+                settingsManager.send((String) arguments.get("settings"), result);
                 break;
             default:
                 result.notImplemented();
@@ -216,28 +217,45 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
         this.fsManager.setFsManager(new FsManager(this.transport));
 
         // TODO: refactor
+        final boolean[] connected = {false, false};
         this.uartManager.connect(device).timeout(100000)
                 .retry(3, 100)
                 .done(new SuccessCallback() {
                     @Override
                     public void onRequestCompleted(@NonNull BluetoothDevice device) {
-                        System.out.println("Device initiated");
+                        System.out.println("u Device initiated");
                         System.out.println(device);
+                        connected[0] = true;
                     }
-                })
+                }).fail(new FailCallback() {
+            @Override
+            public void onRequestFailed(@NonNull BluetoothDevice device, int status) {
+                System.out.println("u Device failed");
+                connected[0] = false;
+            }
+        })
                 .enqueue();
         this.settingsManager.connect(device).timeout(100000)
                 .retry(3, 100)
                 .done(new SuccessCallback() {
                     @Override
                     public void onRequestCompleted(@NonNull BluetoothDevice device) {
-                        System.out.println("Device initiated");
+                        System.out.println("s Device initiated");
                         System.out.println(device);
+                        connected[1] = true;
                     }
-                })
+                }).fail(new FailCallback() {
+            @Override
+            public void onRequestFailed(@NonNull BluetoothDevice device, int status) {
+                System.out.println("s Device failed");
+                connected[1] = false;
+            }
+        })
                 .enqueue();
         System.out.println(settingsManager);
         System.out.println(uartManager);
+        result.success(connected[0] && connected[1]);
+
     }
 
     /* ---------------------------------------------------------------------------------------*/
