@@ -7,9 +7,15 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 
+import com.korantom.flutter_mcumgr.device_services.BleServiceManager;
+import com.korantom.flutter_mcumgr.device_services.GattService;
+import com.korantom.flutter_mcumgr.device_services.SettingsServiceManager;
+import com.korantom.flutter_mcumgr.device_services.UARTServiceManager;
+
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 
 
@@ -31,8 +37,6 @@ import io.runtime.mcumgr.response.dflt.McuMgrEchoResponse;
 import no.nordicsemi.android.ble.callback.FailCallback;
 import no.nordicsemi.android.ble.callback.SuccessCallback;
 
-// TODO: rename methods
-
 /**
  * FlutterMcumgrPlugin
  */
@@ -49,8 +53,8 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
     private ImageManagerWrapper imageManager;
     private FirmwareUpgradeManagerWrapper firmwareUpgradeManager;
     private FileSystemManagerWrapper fsManager;
-    private UARTManager uartManager;
-    private SettingsManager settingsManager;
+    private UARTServiceManager uartManager;
+    private SettingsServiceManager settingsManager;
 
 
 
@@ -66,8 +70,8 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
         this.imageManager = new ImageManagerWrapper(String.format("%s/event/upload", NAMESPACE), flutterPluginBinding);
         this.firmwareUpgradeManager = new FirmwareUpgradeManagerWrapper(String.format("%s/event/upgrade", NAMESPACE), flutterPluginBinding);
         this.fsManager = new FileSystemManagerWrapper(String.format("%s/event/file", NAMESPACE), flutterPluginBinding);
-        this.uartManager = new UARTManager(context);
-        this.settingsManager = new SettingsManager(context);
+        this.uartManager = new UARTServiceManager();
+        this.settingsManager = new SettingsServiceManager();
 
         this.methodChannel.setMethodCallHandler(this);
     }
@@ -91,8 +95,8 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
         plugin.imageManager = new ImageManagerWrapper(String.format("%s/event/upload", NAMESPACE), registrar);
         plugin.firmwareUpgradeManager = new FirmwareUpgradeManagerWrapper(String.format("%s/event/upgrade", NAMESPACE), registrar);
         plugin.fsManager = new FileSystemManagerWrapper(String.format("%s/event/file", NAMESPACE), registrar);
-        plugin.uartManager = new UARTManager(plugin.context);
-        plugin.settingsManager = new SettingsManager(plugin.context);
+        plugin.uartManager = new UARTServiceManager();
+        plugin.settingsManager = new SettingsServiceManager();
 
 
         plugin.methodChannel.setMethodCallHandler(plugin);
@@ -174,10 +178,10 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
                 fsManager._cancelTransfer(result);
                 break;
             case "readSettings":
-                settingsManager.read(result);
+                settingsManager.readSettings(result);
                 break;
             case "changeSettings":
-                settingsManager.send((String) arguments.get("settings"), result);
+                settingsManager.changeSettings((String) arguments.get("settings"), result);
                 break;
             default:
                 result.notImplemented();
@@ -216,45 +220,25 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
         this.firmwareUpgradeManager.setFirmwareUpgradeManager(new FirmwareUpgradeManager(this.transport));
         this.fsManager.setFsManager(new FsManager(this.transport));
 
-        // TODO: refactor
-        final boolean[] connected = {false, false};
-        this.uartManager.connect(device).timeout(100000)
-                .retry(3, 100)
+
+        final BleServiceManager bleServiceManager = new BleServiceManager(context, Arrays.<GattService>asList(this.uartManager, this.settingsManager));
+
+        bleServiceManager.connect(device).timeout(100000)
+                .retry(6, 100)
                 .done(new SuccessCallback() {
                     @Override
                     public void onRequestCompleted(@NonNull BluetoothDevice device) {
-                        System.out.println("u Device initiated");
+                        System.out.println("Device initiated");
                         System.out.println(device);
-                        connected[0] = true;
+                        result.success(true);
                     }
                 }).fail(new FailCallback() {
             @Override
             public void onRequestFailed(@NonNull BluetoothDevice device, int status) {
-                System.out.println("u Device failed");
-                connected[0] = false;
+                System.out.println("Device failed " + status);
+                result.success(false);
             }
-        })
-                .enqueue();
-        this.settingsManager.connect(device).timeout(100000)
-                .retry(3, 100)
-                .done(new SuccessCallback() {
-                    @Override
-                    public void onRequestCompleted(@NonNull BluetoothDevice device) {
-                        System.out.println("s Device initiated");
-                        System.out.println(device);
-                        connected[1] = true;
-                    }
-                }).fail(new FailCallback() {
-            @Override
-            public void onRequestFailed(@NonNull BluetoothDevice device, int status) {
-                System.out.println("s Device failed");
-                connected[1] = false;
-            }
-        })
-                .enqueue();
-        System.out.println(settingsManager);
-        System.out.println(uartManager);
-        result.success(connected[0] && connected[1]);
+        }).enqueue();
 
     }
 

@@ -51,7 +51,7 @@ public class FileSystemManagerWrapper extends ManagerWrapper implements Download
             }
 
             @Override
-            void error(String errorCode, @Nullable String errorMessage, @Nullable Object errorDetails) {
+            public void error(String errorCode, @Nullable String errorMessage, @Nullable Object errorDetails) {
                 result.error(errorCode, errorMessage, errorDetails);
             }
         };

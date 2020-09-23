@@ -12,13 +12,13 @@ import androidx.annotation.Nullable;
  * */
 public abstract class OnFinishCallback {
 
-    void success(@Nullable Object result) {
+    public void success(@Nullable Object result) {
     }
 
     void doSomething() {
     }
 
-    void successOnMain(@Nullable final Object result) {
+    public void successOnMain(@Nullable final Object result) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -27,10 +27,10 @@ public abstract class OnFinishCallback {
         });
     }
 
-    void error(String errorCode, @Nullable String errorMessage, @Nullable Object errorDetails) {
+    public void error(String errorCode, @Nullable String errorMessage, @Nullable Object errorDetails) {
     }
 
-    void errorOnMain(final String errorCode, @Nullable final String errorMessage, @Nullable final Object errorDetails) {
+    public void errorOnMain(final String errorCode, @Nullable final String errorMessage, @Nullable final Object errorDetails) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
