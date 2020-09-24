@@ -53,8 +53,9 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
     private ImageManagerWrapper imageManager;
     private FirmwareUpgradeManagerWrapper firmwareUpgradeManager;
     private FileSystemManagerWrapper fsManager;
-    private UARTServiceManager uartManager;
-    private SettingsServiceManager settingsManager;
+    //    private UARTServiceManager uartManager;
+//    private SettingsServiceManager settingsManager;
+    private ServiceManager serviceManager;
 
 
 
@@ -70,8 +71,8 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
         this.imageManager = new ImageManagerWrapper(String.format("%s/event/upload", NAMESPACE), flutterPluginBinding);
         this.firmwareUpgradeManager = new FirmwareUpgradeManagerWrapper(String.format("%s/event/upgrade", NAMESPACE), flutterPluginBinding);
         this.fsManager = new FileSystemManagerWrapper(String.format("%s/event/file", NAMESPACE), flutterPluginBinding);
-        this.uartManager = new UARTServiceManager();
-        this.settingsManager = new SettingsServiceManager();
+        //this.uartManager = new UARTServiceManager();
+        //this.settingsManager = new SettingsServiceManager();
 
         this.methodChannel.setMethodCallHandler(this);
     }
@@ -95,8 +96,8 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
         plugin.imageManager = new ImageManagerWrapper(String.format("%s/event/upload", NAMESPACE), registrar);
         plugin.firmwareUpgradeManager = new FirmwareUpgradeManagerWrapper(String.format("%s/event/upgrade", NAMESPACE), registrar);
         plugin.fsManager = new FileSystemManagerWrapper(String.format("%s/event/file", NAMESPACE), registrar);
-        plugin.uartManager = new UARTServiceManager();
-        plugin.settingsManager = new SettingsServiceManager();
+        //plugin.uartManager = new UARTServiceManager();
+        //plugin.settingsManager = new SettingsServiceManager();
 
 
         plugin.methodChannel.setMethodCallHandler(plugin);
@@ -166,7 +167,7 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
                 fsManager._readFile((String) arguments.get("filePath"), result);
                 break;
             case "sendTextCommand":
-                uartManager.send((String) arguments.get("text"), result);
+                serviceManager.sendUART((String) arguments.get("text"), result);
                 break;
             case "pauseTransfer":
                 fsManager._pauseTransfer(result);
@@ -178,10 +179,10 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
                 fsManager._cancelTransfer(result);
                 break;
             case "readSettings":
-                settingsManager.readSettings(result);
+                serviceManager.readSettings(result);
                 break;
             case "changeSettings":
-                settingsManager.changeSettings((String) arguments.get("settings"), result);
+                serviceManager.changeSettings((String) arguments.get("settings"), result);
                 break;
             default:
                 result.notImplemented();
@@ -221,9 +222,10 @@ public class FlutterMcumgrPlugin implements FlutterPlugin, MethodCallHandler {
         this.fsManager.setFsManager(new FsManager(this.transport));
 
 
-        final BleServiceManager bleServiceManager = new BleServiceManager(context, Arrays.<GattService>asList(this.uartManager, this.settingsManager));
+        //final BleServiceManager bleServiceManager = new BleServiceManager(context, Arrays.<GattService>asList(this.uartManager, this.settingsManager));
+        this.serviceManager = new ServiceManager(context);
 
-        bleServiceManager.connect(device).timeout(100000)
+        serviceManager.connect(device).timeout(100000)
                 .retry(6, 100)
                 .done(new SuccessCallback() {
                     @Override
