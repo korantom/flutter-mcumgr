@@ -88,10 +88,10 @@ public class ImageManagerWrapper extends ManagerWrapper implements UploadCallbac
         if (this.imageManager == null) return;
 
         if (this.imageData == null) {
-            this.statusStreamHandler.send("File not loaded");
+            this.statusStreamHandler.send(Status.failed.toString());
             return;
         }
-
+        this.statusStreamHandler.send(Status.inProgress.toString());
         this.transferController = this.imageManager.imageUpload(this.imageData, this);
     }
 
@@ -119,20 +119,20 @@ public class ImageManagerWrapper extends ManagerWrapper implements UploadCallbac
 
     @Override
     public void onUploadFailed(@NotNull McuMgrException error) {
-        this.statusStreamHandler.send("Upload Failed");
+        this.statusStreamHandler.send(Status.failed.toString());
         this.progressStreamHandler.send(0.0);
         // TODO: result.error
     }
 
     @Override
     public void onUploadCanceled() {
-        this.statusStreamHandler.send("Upload Canceled");
+        this.statusStreamHandler.send(Status.canceled.toString());
         this.progressStreamHandler.send(0.0);
     }
 
     @Override
     public void onUploadCompleted() {
-        this.statusStreamHandler.send("Upload Finished");
+        this.statusStreamHandler.send(Status.success.toString());
         this.imageData = null;
         this.imageManager = null;
         this.transferController = null;

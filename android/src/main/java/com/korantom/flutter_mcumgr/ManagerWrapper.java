@@ -44,4 +44,11 @@ public abstract class ManagerWrapper {
         this.progressEventChannel.setStreamHandler(progressStreamHandler);
         this.statusEventChannel.setStreamHandler(statusStreamHandler);
     }
+    enum Status{
+        inProgress,
+        paused,
+        failed,
+        success,
+        canceled,
+    }
 }

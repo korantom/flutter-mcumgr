@@ -49,7 +49,7 @@ public class FirmwareUpgradeManagerWrapper extends ManagerWrapper implements Fir
         if (this.firmwareUpgradeManager == null) return;
 
         if (this.imageData == null) {
-            this.statusStreamHandler.send("File not loaded");
+            this.statusStreamHandler.send(Status.failed.toString());
             return;
         }
 
@@ -85,53 +85,53 @@ public class FirmwareUpgradeManagerWrapper extends ManagerWrapper implements Fir
 
     @Override
     public void onUpgradeStarted(FirmwareUpgradeController controller) {
-        this.statusStreamHandler.send("Upgrade started");
+        this.statusStreamHandler.send(Status.inProgress.toString());
     }
 
     @Override
     public void onStateChanged(FirmwareUpgradeManager.State prevState, FirmwareUpgradeManager.State newState) {
-        switch (newState) {
-            case VALIDATE:
-                this.statusStreamHandler.send("Validating");
-                break;
-            case UPLOAD:
-                this.statusStreamHandler.send("Uploading");
-                break;
-            case TEST:
-                this.statusStreamHandler.send("Testing");
-                break;
-            case CONFIRM:
-                this.statusStreamHandler.send("Confirming");
-                break;
-            case RESET:
-                this.statusStreamHandler.send("Reseting");
-                break;
-            case SUCCESS:
-                this.statusStreamHandler.send("Success");
-                break;
-            default:
-                this.statusStreamHandler.send("_");
-                break;
-        }
+//        switch (newState) {
+//            case VALIDATE:
+//                this.statusStreamHandler.send("Validating");
+//                break;
+//            case UPLOAD:
+//                this.statusStreamHandler.send("Uploading");
+//                break;
+//            case TEST:
+//                this.statusStreamHandler.send("Testing");
+//                break;
+//            case CONFIRM:
+//                this.statusStreamHandler.send("Confirming");
+//                break;
+//            case RESET:
+//                this.statusStreamHandler.send("Reseting");
+//                break;
+//            case SUCCESS:
+//                this.statusStreamHandler.send("Success");
+//                break;
+//            default:
+//                this.statusStreamHandler.send("_");
+//                break;
+//        }
     }
 
     @Override
     public void onUpgradeCompleted() {
-        this.statusStreamHandler.send("Upgrade Completed");
+        this.statusStreamHandler.send(Status.success.toString());
         this.imageData = null;
         this.firmwareUpgradeManager = null;
     }
 
     @Override
     public void onUpgradeFailed(FirmwareUpgradeManager.State state, McuMgrException error) {
-        this.statusStreamHandler.send("Upload Failed");
+        this.statusStreamHandler.send(Status.failed.toString());
         this.progressStreamHandler.send(0.0);
         // TODO: result.error
     }
 
     @Override
     public void onUpgradeCanceled(FirmwareUpgradeManager.State state) {
-        this.statusStreamHandler.send("Upload Canceled");
+        this.statusStreamHandler.send(Status.canceled.toString());
         this.progressStreamHandler.send(0.0);
     }
 

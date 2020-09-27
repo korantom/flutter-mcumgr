@@ -56,7 +56,7 @@ public class FileSystemManagerWrapper extends ManagerWrapper implements Download
             }
         };
         this.transferController = this.fsManager.fileDownload(filePath, this);
-        this.statusStreamHandler.send("Download Started");
+        this.statusStreamHandler.send(Status.inProgress.toString());
     }
 
     public void _pauseTransfer(@NonNull final MethodChannel.Result result) {
@@ -84,20 +84,20 @@ public class FileSystemManagerWrapper extends ManagerWrapper implements Download
 
     @Override
     public void onDownloadFailed(@NotNull McuMgrException error) {
-        this.statusStreamHandler.send("Download Failed");
+        this.statusStreamHandler.send(Status.failed.toString());
         this.progressStreamHandler.send(0.0);
         // TODO: result.error
     }
 
     @Override
     public void onDownloadCanceled() {
-        this.statusStreamHandler.send("Download Canceled");
+        this.statusStreamHandler.send(Status.canceled.toString());
         this.progressStreamHandler.send(0.0);
     }
 
     @Override
     public void onDownloadCompleted(@NotNull byte[] data) {
-        this.statusStreamHandler.send(data.length + "bytes");
+        this.statusStreamHandler.send(Status.success.toString());
         onFinish.successOnMain(data);
         onFinish = null;
     }
