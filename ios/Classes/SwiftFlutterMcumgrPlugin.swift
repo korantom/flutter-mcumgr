@@ -31,6 +31,9 @@ public class SwiftFlutterMcumgrPlugin: NSObject, FlutterPlugin {
     private let serviceServiceManagers: [CBUUID : ServiceManager]
     private var characteristicServiceManagers: [CBUUID : ServiceManager]
     private let serviceManagers: [ServiceManager]
+    private let targetCharacteristicCount: Int
+    private var discoveredCharacteristicCount: Int = 0
+    private var onConnected: ((Any) -> Void)?
     
     
     private var uuid: UUID? {
@@ -79,6 +82,10 @@ public class SwiftFlutterMcumgrPlugin: NSObject, FlutterPlugin {
         
         self.serviceManagers = [uartManager, setttingsManager]
         
+        self.targetCharacteristicCount = serviceManagers.map({ (serviceManager: ServiceManager) -> Int in
+            return serviceManager.characteristicsUUIDs.count
+        }).reduce(0, +)
+            
         super.init()
         
         centralManager.delegate = self
@@ -209,9 +216,8 @@ public class SwiftFlutterMcumgrPlugin: NSObject, FlutterPlugin {
             return
         }
         bluetoothPeripheral.delegate = self
+        self.onConnected = { (reply) in result(reply)}
         centralManager.connect(bluetoothPeripheral, options: nil)
-        
-        result(true)
     }
     
     /* ---------------------------------------------------------------------------------------*/
@@ -285,6 +291,7 @@ extension SwiftFlutterMcumgrPlugin: CBCentralManagerDelegate{
         
         log("Discovering services...", atLevel: .verbose)
         log("peripheral.discoverServices([\(self.serviceUUIDs)])", atLevel: .verbose)
+        self.discoveredCharacteristicCount = 0
         peripheral.discoverServices(self.serviceUUIDs)
         
     }
@@ -333,6 +340,7 @@ extension SwiftFlutterMcumgrPlugin: CBPeripheralDelegate{
         for aCharacteristic : CBCharacteristic in service.characteristics! {
             serviceManager.characteristics[aCharacteristic.uuid] = aCharacteristic
             characteristicServiceManagers[aCharacteristic.uuid] = serviceManager
+            self.discoveredCharacteristicCount += 1
             log( "Characteristic \(aCharacteristic.uuid) found", atLevel: .verbose)
         }
         
@@ -341,13 +349,19 @@ extension SwiftFlutterMcumgrPlugin: CBPeripheralDelegate{
                 bluetoothPeripheral!.setNotifyValue(true, for: txCharacteristic)
             }
         }
-        
         if serviceManager.characteristics.count != serviceManager.characteristicsUUIDs.count{
             log( "\(service.uuid) service does not have all required characteristics.", atLevel: .verbose)
-            return
+            self.onConnected?(FlutterError(code: "CONNECT_DEVICEE_ERROR",
+                                           message: "Failed to find all neccesary characteristics",
+                                           details: ""))
+            self.onConnected = nil
         }
         
-        // TODO: serviceManager.characteristics.keys contains all rx and tx ..
+        if self.discoveredCharacteristicCount == self.targetCharacteristicCount{
+            self.onConnected?(true)
+            self.onConnected = nil
+        }
+        
         
     }
     

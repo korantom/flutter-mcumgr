@@ -129,10 +129,9 @@ class FlutterMcuManager {
   /// Init classes for upcoming operations
   static Future<bool> connect(String macAddress) async {
     try {
-      await _methodChannel.invokeMethod('connect', <String, dynamic>{
+      return await _methodChannel.invokeMethod('connect', <String, dynamic>{
         'macAddress': macAddress,
       });
-      return true;
     } catch (e) {
       return false;
     }
