@@ -18,17 +18,17 @@ class FirmwareUpgradeManagerWrapper: ManagerWrapper{
     func upgrade(result: @escaping FlutterResult) -> Void{
         
         guard let data = self.imageData else {
-            self.statusStreamHandler.send("File not loaded")
+            self.statusStreamHandler.send(Status.failed.rawValue)
             return
         }
         
         do {
             self.firmwareUpgradeManager?.mode = .confirmOnly
             try self.firmwareUpgradeManager?.start(data: data)
-            self.statusStreamHandler.send("Upgrade Started")
+            self.statusStreamHandler.send(Status.inProgress.rawValue)
             
         } catch {
-            self.statusStreamHandler.send("Upgrade Not Started")
+            self.statusStreamHandler.send(Status.failed.rawValue)
         }
     }
     
@@ -53,44 +53,44 @@ extension FirmwareUpgradeManagerWrapper: FirmwareUpgradeDelegate{
     }
     
     public func upgradeDidStart(controller: FirmwareUpgradeController) {
-        self.statusStreamHandler.send("Upgrade Started")
+        self.statusStreamHandler.send(Status.inProgress.rawValue)
     }
     
     public func upgradeStateDidChange(from previousState: FirmwareUpgradeState, to newState: FirmwareUpgradeState) {
-        var status: String
-        switch newState {
-        case .validate:
-            status = "Validating"
-        case .upload:
-            status = "Uploading"
-        case .test:
-            status = "Testing"
-        case .confirm:
-            status = "Confirming"
-        case .reset:
-            status = "Reseting"
-        case .success:
-            status = "Success"
-        default:
-            status = ""
-        }
-        self.statusStreamHandler.send(status)
+//        var status: String
+//        switch newState {
+//        case .validate:
+//            status = "Validating"
+//        case .upload:
+//            status = "Uploading"
+//        case .test:
+//            status = "Testing"
+//        case .confirm:
+//            status = "Confirming"
+//        case .reset:
+//            status = "Reseting"
+//        case .success:
+//            status = "Success"
+//        default:
+//            status = ""
+//        }
+//        self.statusStreamHandler.send(status)
         
     }
     
     public func upgradeDidComplete() {
-        self.statusStreamHandler.send("Upgrade Finished")
+        self.statusStreamHandler.send(Status.success.rawValue)
         self.imageData = nil
     }
     
     public func upgradeDidFail(inState state: FirmwareUpgradeState, with error: Error) {
-        self.statusStreamHandler.send("\(error.localizedDescription)")
+        self.statusStreamHandler.send(Status.failed.rawValue)
         self.progressStreamHandler.send(0.0)
         
     }
     
     public func upgradeDidCancel(state: FirmwareUpgradeState) {
-        self.statusStreamHandler.send("Upgrade Canceled")
+        self.statusStreamHandler.send(Status.canceled.rawValue)
         self.progressStreamHandler.send(0.0)
     }
     

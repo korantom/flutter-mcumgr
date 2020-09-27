@@ -44,20 +44,20 @@ extension FileSystemManagerWrapper: FileDownloadDelegate{
     public func downloadDidFail(with error: Error) {
         switch error as? FileTransferError {
         case .mcuMgrErrorCode(.unknown):
-            self.statusStreamHandler.send("File not found")
+            self.statusStreamHandler.send(Status.failed.rawValue)
         default:
-            self.statusStreamHandler.send("\(error.localizedDescription)")
+            self.statusStreamHandler.send(Status.failed.rawValue)
         }
         self.progressStreamHandler.send(0.0)
     }
     
     public func downloadDidCancel() {
-        self.statusStreamHandler.send("Download Canceled")
+        self.statusStreamHandler.send(Status.canceled.rawValue)
         self.progressStreamHandler.send(0.0)
     }
     
     public func download(of name: String, didFinish data: Data) {
-        self.statusStreamHandler.send("\(name) (\(data.count) bytes)")
+        self.statusStreamHandler.send(Status.success.rawValue)
         
         onDownload?(FlutterStandardTypedData(bytes: data))
         

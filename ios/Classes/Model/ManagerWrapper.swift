@@ -25,4 +25,12 @@ class ManagerWrapper: ProgressStatusChannel{
         statusEventChannel.setStreamHandler(statusStreamHandler)
         progressEventChannel.setStreamHandler(progressStreamHandler)
     }
+    
+    enum Status: String {
+        case inProgress
+        case paused
+        case failed
+        case success
+        case canceled
+    }
 }

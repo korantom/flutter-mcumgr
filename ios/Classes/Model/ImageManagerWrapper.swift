@@ -53,14 +53,14 @@ class ImageManagerWrapper: ManagerWrapper{
     func upload(result: @escaping FlutterResult) -> Void{
         
         guard let data = self.imageData else {
-            self.statusStreamHandler.send("File not loaded")
+            self.statusStreamHandler.send(Status.failed.rawValue)
             return
         }
         
         if self.imageManager!.upload(data: data, delegate: self){
-            self.statusStreamHandler.send("Upload Started")
+            self.statusStreamHandler.send(Status.inProgress.rawValue)
         }else{
-            self.statusStreamHandler.send("Upload Not Started")
+            self.statusStreamHandler.send(Status.failed.rawValue)
         }
     }
     
@@ -98,17 +98,17 @@ extension ImageManagerWrapper: ImageUploadDelegate {
     }
     
     public func uploadDidFail(with error: Error) {
-        self.statusStreamHandler.send("\(error.localizedDescription)")
+        self.statusStreamHandler.send(Status.failed.rawValue)
         self.progressStreamHandler.send(0.0)
     }
     
     public func uploadDidCancel() {
-        self.statusStreamHandler.send("Upload Canceled")
+        self.statusStreamHandler.send(Status.canceled.rawValue)
         self.progressStreamHandler.send(0.0)
     }
     
     public func uploadDidFinish() {
-        self.statusStreamHandler.send("Upload Finished")
+        self.statusStreamHandler.send(Status.success.rawValue)
         self.imageData = nil
     }
 }
