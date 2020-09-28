@@ -85,13 +85,13 @@ public class ImageManagerWrapper extends ManagerWrapper implements UploadCallbac
     /* ------------------------------------------------------------------------------------------ */
 
     public void _upload(@NonNull final MethodChannel.Result result) {
-        if (this.imageManager == null) return;
-
-        if (this.imageData == null) {
+        if (this.imageData == null || this.imageManager == null) {
             this.statusStreamHandler.send(Status.failed.toString());
+            result.error("IMAGE_UPLOAD_ERROR", "Failed to uplaod image", "");
             return;
         }
         this.statusStreamHandler.send(Status.inProgress.toString());
+        result.success(true);
         this.transferController = this.imageManager.imageUpload(this.imageData, this);
     }
 

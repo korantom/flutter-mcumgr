@@ -155,17 +155,25 @@ class FlutterMcuManager {
   /* ------------------------------------------------------------------------ */
 
   /// Load image from mobile phone (prepare for upload, TODO: check hash etc.)
-  static Future<void> load(String filePath) async {
-    await _methodChannel.invokeMethod('load', <String, dynamic>{
-      'filePath': filePath,
-    });
+  static Future<bool> load(String filePath) async {
+    try {
+      return await _methodChannel.invokeMethod('load', <String, dynamic>{
+        'filePath': filePath,
+      });
+    } catch (e) {
+      return false;
+    }
   }
 
   /* ------------------------------------------------------------------------ */
 
   /// Upload image to device
-  static Future<void> upload() async {
-    await _methodChannel.invokeMethod('upload', <String, dynamic>{});
+  static Future<bool> upload() async {
+    try {
+      return await _methodChannel.invokeMethod('upload', <String, dynamic>{});
+    } catch (e) {
+      return false;
+    }
   }
 
   /// Pause image upload

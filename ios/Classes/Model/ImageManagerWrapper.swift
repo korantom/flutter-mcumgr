@@ -54,13 +54,20 @@ class ImageManagerWrapper: ManagerWrapper{
         
         guard let data = self.imageData else {
             self.statusStreamHandler.send(Status.failed.rawValue)
+            result(FlutterError(code: "IMAGE_UPLOAD_ERROR",
+                                message: "Missing Image",
+                                details: ""))
             return
         }
         
         if self.imageManager!.upload(data: data, delegate: self){
             self.statusStreamHandler.send(Status.inProgress.rawValue)
+            result(true)
         }else{
             self.statusStreamHandler.send(Status.failed.rawValue)
+            result(FlutterError(code: "IMAGE_UPLOAD_ERROR",
+                                message: "Failed to begin uploading image",
+                                details: ""))
         }
     }
     

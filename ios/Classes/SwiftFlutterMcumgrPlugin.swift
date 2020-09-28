@@ -244,6 +244,7 @@ public class SwiftFlutterMcumgrPlugin: NSObject, FlutterPlugin {
             self.imageManager.imageData = data
             self.firmwareUpgradeManager.imageData = data
             self.fileSystemManager.imageData = data
+            result(true)
             
         } catch {
             result(FlutterError(code: "IMAGE_LOAD_ERROR",
